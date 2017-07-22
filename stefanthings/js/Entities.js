@@ -4,7 +4,7 @@ var upgradeList = {};
 var bulletList = {};
 
 Player = function(){
-        var self = Actor('player','myId',50,40,1000,1000,23,50,Img.player,10,1);
+        var self = Actor('player','myId',250,250,1000,1000,23,50,Img.player,10,1);
        
         self.updatePosition = function(){
                 if(self.pressingRight)
