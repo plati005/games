@@ -4,7 +4,8 @@ var upgradeList = {};
 var bulletList = {};
 
 Player = function(){
-        var self = Actor('player','myId',250,250,1000,1000,23,50,Img.player,10,1);
+		//				(type    ,id    ,x  ,y  ,spdX,spdY,width50,height70,img,hp,atkSpd)
+		var self = Actor('player','myId',250,250,1000,1000,23,50,Img.player,10,1);
        
         self.updatePosition = function(){
                 if(self.pressingRight)
@@ -181,7 +182,7 @@ Enemy = function(id,x,y,spdX,spdY,width,height){
 		var super_update = self.update;
 		self.update = function () {
 			super_update();
-			//self.performAttack();
+			self.performAttack();
         
             var isColliding = player.testCollision(self);
             if(isColliding){
@@ -195,8 +196,8 @@ randomlyGenerateEnemy = function(){
         //Math.random() returns a number between 0 and 1
         var x = Math.random()*currentMap.width;
         var y = Math.random()*currentMap.height;
-        var height = 50;
-		var width = 23;
+        var height = 50; //64
+		var width = 23; //64
 		//var height = 10 + Math.random()*30;     //between 10 and 40
         //var width = 10 + Math.random()*30;
         var id = Math.random();
@@ -264,7 +265,7 @@ Bullet = function (id,x,y,spdX,spdY,width,height){
             
 			//delete the enemies - commented out
             for(var key2 in enemyList){
-                        //*
+                        /*
                         var isColliding = self.testCollision(enemyList[key2]);
                         if(isColliding){
                                 toRemove = true;
@@ -285,8 +286,8 @@ generateBullet = function(actor,aimOverwrite){
         //Math.random() returns a number between 0 and 1
         var x = actor.x;
         var y = actor.y;
-        var height = 25;
-        var width = 25;
+        var height = 25; //32
+        var width = 25; //32
         var id = Math.random();
        
         var angle;
