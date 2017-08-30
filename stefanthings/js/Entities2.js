@@ -4,7 +4,8 @@ var upgradeList = {};
 var bulletList = {};
 
 Player = function(){
-        var self = Actor('player','myId',250,250,1000,1000,23,50,Img.player,10,1);
+        //				 type    ,id    ,x,y,spdX,spdY,width,height,img,hp,atkSpd
+		var self = Actor('player','myId',250,250,1000,1000,23,50,Img.player,10,1);
        
         self.updatePosition = function(){
                 if(self.pressingRight)
@@ -118,7 +119,7 @@ Entity = function(type,id,x,y,spdX,spdY,width,height,img){
                 return testCollisionRectRect(rect1,rect2);
                
         }
-		//update the position math only
+		//update the position math only (missing taking into account height/width of entity)
         self.updatePosition = function(){
                 self.x += self.spdX;
                 self.y += self.spdY;

@@ -62,8 +62,10 @@ document.onmousemove = function(mouse){
         var mouseX = mouse.clientX - document.getElementById('ctx').getBoundingClientRect().left;
         var mouseY = mouse.clientY - document.getElementById('ctx').getBoundingClientRect().top;
        
-        mouseX -= player.x;
-        mouseY -= player.y;
+        //mouseX -= player.x;
+        //mouseY -= player.y;
+		mouseX -= WIDTH/2;
+        mouseY -= HEIGHT/2;        			
        
         player.aimAngle = Math.atan2(mouseY,mouseX) / Math.PI * 180;
 }
@@ -184,12 +186,12 @@ Maps = function(id, imgSrc, width, height) {
 	self.draw = function (){
 		var x = WIDTH/2-player.x;
 		var y = HEIGHT/2-player.y;
-		ctx.drawImage(self.image, 0, 0, self.image.width, self.image.height, x, y, self.image.width*2, self.image.height*2);
+		ctx.drawImage(self.image, 0, 0, self.image.width, self.image.height, x, y, self.image.width, self.image.height);
 	}
 	return self;
 	
 }	
-currentMap = Maps('field',"img/map.png", 1280,960);
+currentMap = Maps('field',"img/map2.png", 2304, 1984);
 
 
 player = Player();

@@ -2,9 +2,10 @@ var player;
 var enemyList = {};
 var upgradeList = {};
 var bulletList = {};
+var fluff = 512; // need to make this flexible per map per screensize, need this value as part of the Maps object
 
 Player = function(){
-		//				(type    ,id    ,x  ,y  ,spdX,spdY,width50,height70,img,hp,atkSpd)
+		//				 type    ,id    ,x  ,y  ,spdX,spdY,width50,height70,img,hp,atkSpd
 		var self = Actor('player','myId',250,250,1000,1000,23,50,Img.player,10,1);
        
         self.updatePosition = function(){
@@ -17,15 +18,15 @@ Player = function(){
                 if(self.pressingUp)
                         self.y -= 10;  
 				
-                //ispositionvalid
-                if(self.x < self.width/2)
-                        self.x = self.width/2;
-                if(self.x > currentMap.width-self.width/2)
-                        self.x = currentMap.width - self.width/2;
-                if(self.y < self.height/2)
-                        self.y = self.height/2;
-                if(self.y > currentMap.height - self.height/2)
-                        self.y = currentMap.height - self.height/2;
+                //ispositionvalid - this is similar to flipping the speed for entity, it can be removed if player speed is used
+                if(self.x < self.width/2 + fluff)
+                        self.x = self.width/2 + fluff;
+                if(self.x > currentMap.width - self.width/2 - fluff)
+                        self.x = currentMap.width - self.width/2 - fluff;
+                if(self.y < self.height/2 + fluff)
+                        self.y = self.height/2 + fluff;
+                if(self.y > currentMap.height - self.height/2 - fluff)
+                        self.y = currentMap.height - self.height/2 - fluff;
         }
 		
 		//update the Entity using additional update Player
@@ -119,15 +120,15 @@ Entity = function(type,id,x,y,spdX,spdY,width,height,img){
                 return testCollisionRectRect(rect1,rect2);
                
         }
-		//update the position math only
+		//update the position math only (this is missing taking into account the height/width of entity)
         self.updatePosition = function(){
                 self.x += self.spdX;
                 self.y += self.spdY;
                                
-                if(self.x < 0 || self.x > currentMap.width){
+                if(self.x < 0 + fluff || self.x > currentMap.width - fluff){
                         self.spdX = -self.spdX;
                 }
-                if(self.y < 0 || self.y > currentMap.height){
+                if(self.y < 0 + fluff || self.y > currentMap.height - fluff){
                         self.spdY = -self.spdY;
                 }
         }
@@ -182,8 +183,9 @@ Enemy = function(id,x,y,spdX,spdY,width,height){
 		var super_update = self.update;
 		self.update = function () {
 			super_update();
-			self.performAttack();
+			self.performAttack(); //peforms the enemy attack
         
+			//*player lose hp on touching enemy - this can be commented out if enemies perform attacks so that only their attacks hit																												
             var isColliding = player.testCollision(self);
             if(isColliding){
                     player.hp = player.hp - 1;
@@ -248,10 +250,11 @@ randomlyGenerateUpgrade = function(){
         Upgrade(id,x,y,spdX,spdY,width,height,category,img);
 }
  
-Bullet = function (id,x,y,spdX,spdY,width,height){
+Bullet = function (id,x,y,spdX,spdY,width,height, combatType){
         var self = Entity('bullet',id,x,y,spdX,spdY,width,height,Img.bullet);
        
         self.timer = 0;
+		self.combatType = combatType;					   
 		
 		//update the Entity using additional update Bullet 
 		var super_update = self.update;
@@ -263,18 +266,22 @@ Bullet = function (id,x,y,spdX,spdY,width,height){
                 toRemove = true;
             }
             
-			//delete the enemies - commented out
-            for(var key2 in enemyList){
-                        /*
-                        var isColliding = self.testCollision(enemyList[key2]);
-                        if(isColliding){
-                                toRemove = true;
-                                delete enemyList[key2];
-                                break;
-                        }      
-                        //*/
-            }
-            if(toRemove){
+			//bullet collision
+			if (self.combatType == 'player') { //bullet was shot by player - delete enemies																				  
+				for(var key2 in enemyList){
+					if(self.testCollision(enemyList[key2])){
+							toRemove = true;
+							delete enemyList[key2];
+							//break; - why was this removed?
+					}      			
+				}
+			} else if (self.combatType == 'enemy') { //bullet was shot by enemy	- delete player hp
+				if(self.testCollision(player)){
+                    toRemove = true;
+					player.hp -= 1;
+				}
+			}
+			if(toRemove){
                 delete bulletList[self.id];
             }
 		}
@@ -297,6 +304,6 @@ generateBullet = function(actor,aimOverwrite){
        
         var spdX = Math.cos(angle/180*Math.PI)*5;
         var spdY = Math.sin(angle/180*Math.PI)*5;
-        Bullet(id,x,y,spdX,spdY,width,height);
+        Bullet(id,x,y,spdX,spdY,width,height,actor.type);
 }
  
