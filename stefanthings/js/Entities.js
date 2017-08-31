@@ -2,7 +2,6 @@ var player;
 var enemyList = {};
 var upgradeList = {};
 var bulletList = {};
-var fluff = 512; // need to make this flexible per map per screensize, need this value as part of the Maps object
 
 Player = function(){
 		//				 type    ,id    ,x  ,y  ,spdX,spdY,width50,height70,img,hp,atkSpd
@@ -18,15 +17,15 @@ Player = function(){
                 if(self.pressingUp)
                         self.y -= 10;  
 				
-                //ispositionvalid - this is similar to flipping the speed for entity, it can be removed if player speed is used
-                if(self.x < self.width/2 + fluff)
-                        self.x = self.width/2 + fluff;
-                if(self.x > currentMap.width - self.width/2 - fluff)
-                        self.x = currentMap.width - self.width/2 - fluff;
-                if(self.y < self.height/2 + fluff)
-                        self.y = self.height/2 + fluff;
-                if(self.y > currentMap.height - self.height/2 - fluff)
-                        self.y = currentMap.height - self.height/2 - fluff;
+                //TODO: ispositionvalid - this is similar to flipping the speed for entity, it can be removed if player speed is used
+                if(self.x < self.width/2 + currentMap.fluff)
+                        self.x = self.width/2 + currentMap.fluff;
+                if(self.x > currentMap.width - self.width/2 - currentMap.fluff)
+                        self.x = currentMap.width - self.width/2 - currentMap.fluff;
+                if(self.y < self.height/2 + currentMap.fluff)
+                        self.y = self.height/2 + currentMap.fluff;
+                if(self.y > currentMap.height - self.height/2 - currentMap.fluff)
+                        self.y = currentMap.height - self.height/2 - currentMap.fluff;
         }
 		
 		//update the Entity using additional update Player
@@ -125,10 +124,10 @@ Entity = function(type,id,x,y,spdX,spdY,width,height,img){
                 self.x += self.spdX;
                 self.y += self.spdY;
                                
-                if(self.x < 0 + fluff || self.x > currentMap.width - fluff){
+                if(self.x < 0 + currentMap.fluff || self.x > currentMap.width - currentMap.fluff){
                         self.spdX = -self.spdX;
                 }
-                if(self.y < 0 + fluff || self.y > currentMap.height - fluff){
+                if(self.y < 0 + currentMap.fluff || self.y > currentMap.height - currentMap.fluff){
                         self.spdY = -self.spdY;
                 }
         }
@@ -185,19 +184,20 @@ Enemy = function(id,x,y,spdX,spdY,width,height){
 			super_update();
 			self.performAttack(); //peforms the enemy attack
         
-			//*player lose hp on touching enemy - this can be commented out if enemies perform attacks so that only their attacks hit																												
+			/*player lose hp on touching enemy - this can be commented out if enemies perform attacks so that only their attacks hit																												
             var isColliding = player.testCollision(self);
             if(isColliding){
                     player.hp = player.hp - 1;
             }
+			//*/
 		}
 		enemyList[id] = self;
 }
  
 randomlyGenerateEnemy = function(){
-        //Math.random() returns a number between 0 and 1
-        var x = Math.random()*currentMap.width;
-        var y = Math.random()*currentMap.height;
+        //adding fluff and generating in the correct area, sidenote: Math.random() returns a number between 0 and 1
+        var x = Math.random()*(currentMap.width-2*currentMap.fluff)+currentMap.fluff;
+        var y = Math.random()*(currentMap.height-2*currentMap.fluff)+currentMap.fluff;
         var height = 50; //64
 		var width = 23; //64
 		//var height = 10 + Math.random()*30;     //between 10 and 40
@@ -272,7 +272,7 @@ Bullet = function (id,x,y,spdX,spdY,width,height, combatType){
 					if(self.testCollision(enemyList[key2])){
 							toRemove = true;
 							delete enemyList[key2];
-							//break; - why was this removed?
+							//break;
 					}      			
 				}
 			} else if (self.combatType == 'enemy') { //bullet was shot by enemy	- delete player hp

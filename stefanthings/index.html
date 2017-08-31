@@ -174,12 +174,13 @@ startNewGame = function(){
        
 }
 
-Maps = function(id, imgSrc, width, height) {
+Maps = function(id, imgSrc, width, height, fluff) {
 	var self = {
 		id:id,
 		image:new Image(),
 		width:width,
-		height:height
+		height:height,
+		fluff:fluff  //TODO: make this flexible per map per screensize
 	}
 	self.image.src = imgSrc;
 	
@@ -191,7 +192,7 @@ Maps = function(id, imgSrc, width, height) {
 	return self;
 	
 }	
-currentMap = Maps('field',"img/map2.png", 2304, 1984);
+currentMap = Maps('field',"img/map2.png", 2304, 1984, 512);
 
 
 player = Player();
