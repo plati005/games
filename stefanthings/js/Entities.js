@@ -178,10 +178,36 @@ Actor = function(type,id,x,y,spdX,spdY,width,height,img,hp,atkSpd){
 Enemy = function(id,x,y,spdX,spdY,width,height){
         var self = Actor('enemy',id,x,y,spdX,spdY,width,height,Img.enemy,10,1);
         
+		//overwrite of enemy aim angle of 0 
+		self.updateAim = function () {
+			var diffX = player.x - self.x;
+			var diffY = player.y - self.y;
+			
+			self.aimAngle = Math.atan2(diffY,diffX) / Math.PI * 180
+		}
+		
+		//*/overwrite enemy bounces to just follow player
+		self.updatePosition = function(){
+			var diffX = player.x - self.x;
+			var diffY = player.y - self.y;
+			
+			if (diffX > 3)
+				self.x += 3;
+			else if (diffX < -3)
+				self.x -= 3;
+			
+			if (diffY > 3)
+				self.y += 3;
+			else if (diffY < -3)
+				self.y -= 3;
+        }
+		//*/
+		
 		//update the Actor using additional update Enemy
 		var super_update = self.update;
 		self.update = function () {
 			super_update();
+			self.updateAim();
 			self.performAttack(); //peforms the enemy attack
         
 			/*player lose hp on touching enemy - this can be commented out if enemies perform attacks so that only their attacks hit																												
@@ -254,7 +280,9 @@ Bullet = function (id,x,y,spdX,spdY,width,height, combatType){
         var self = Entity('bullet',id,x,y,spdX,spdY,width,height,Img.bullet);
        
         self.timer = 0;
-		self.combatType = combatType;					   
+		self.combatType = combatType;
+		//self.spdX = spdX; not needed as spdX is in Entity
+		//self.spdY = spdY; not needed as spdX is in Entity
 		
 		//update the Entity using additional update Bullet 
 		var super_update = self.update;
@@ -289,7 +317,7 @@ Bullet = function (id,x,y,spdX,spdY,width,height, combatType){
         bulletList[id] = self;
 }
  
-generateBullet = function(actor,aimOverwrite){
+generateBullet = function(actor,aimOverwrite){ //aimOverwrite should be used most often, however for now it is always used
         //Math.random() returns a number between 0 and 1
         var x = actor.x;
         var y = actor.y;
