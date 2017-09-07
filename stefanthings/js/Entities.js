@@ -2,6 +2,7 @@ var player;
 var enemyList = {};
 var upgradeList = {};
 var bulletList = {};
+//TODO: remove entire entity class and entire actor class
 
 Player = function(){
 		//				 type    ,id    ,x  ,y  ,spdX,spdY,width50,height70,img,hp,atkSpd
@@ -32,10 +33,9 @@ Player = function(){
 		var super_update = self.update;
         self.update = function(){
             super_update();
-			
-			//check if game over
-			if(self.hp <= 0){
-                var timeSurvived = Date.now() - timeWhenGameStarted;           
+		}
+		self.onDeath = function(){
+				var timeSurvived = Date.now() - timeWhenGameStarted;           
                 //sessionStorage.setItem("score", score);
 				console.log("You lost! You survived for " + timeSurvived + " ms.");            
                 //window.location.href = "gameover.html";
@@ -48,9 +48,7 @@ Player = function(){
 				document.getElementById("highscore").innerHTML = highscore;
 				*/
 				startNewGame();
-			}
 		}
-		
 		
         self.pressingDown = false;
         self.pressingUp = false;
@@ -146,10 +144,12 @@ Actor = function(type,id,x,y,spdX,spdY,width,height,img,hp,atkSpd){
 		//update the Entity using additional update Actor
         var super_update = self.update;
         self.update = function(){
-                super_update();
-                self.attackCounter += self.atkSpd;
-        }
-       
+				super_update();
+				self.attackCounter += self.atkSpd;
+				if (self.hp <= 0)
+					self.onDeath();
+		}
+		self.onDeath = function(){};
         self.performAttack = function(){
                 if(self.attackCounter > 25){    //every 1 sec
                         self.attackCounter = 0;
@@ -175,8 +175,8 @@ Actor = function(type,id,x,y,spdX,spdY,width,height,img,hp,atkSpd){
         return self;
 }
  
-Enemy = function(id,x,y,spdX,spdY,width,height){
-        var self = Actor('enemy',id,x,y,spdX,spdY,width,height,Img.enemy,10,1);
+Enemy = function(id,x,y,spdX,spdY,width,height,img,hp,atkSpd){
+        var self = Actor('enemy',id,x,y,spdX,spdY,width,height,img,hp,atkSpd);
         
 		//overwrite of enemy aim angle of 0 
 		self.updateAim = function () {
@@ -202,6 +202,14 @@ Enemy = function(id,x,y,spdX,spdY,width,height){
 				self.y -= 3;
         }
 		//*/
+		self.toRemove = false;
+		
+		self.onDeath = function(){
+			self.toRemove = true;
+			//TODO:delete enemyList[key];
+		}
+		
+
 		
 		//update the Actor using additional update Enemy
 		var super_update = self.update;
@@ -216,6 +224,9 @@ Enemy = function(id,x,y,spdX,spdY,width,height){
                     player.hp = player.hp - 1;
             }
 			//*/
+			if(self.toRemove){
+                delete enemyList[self.id];
+            }
 		}
 		enemyList[id] = self;
 }
@@ -231,8 +242,10 @@ randomlyGenerateEnemy = function(){
         var id = Math.random();
         var spdX = 5 + Math.random() * 5;
         var spdY = 5 + Math.random() * 5;
-        Enemy(id,x,y,spdX,spdY,width,height);
-       
+        if (Math.random() < 0.5)
+			Enemy(id,x,y,spdX,spdY,width,height,Img.enemy,2,1);
+		else
+			Enemy(id,x,y,spdX,spdY,width,height,Img.enemyTwo,1,3);
 }
  
 Upgrade = function (id,x,y,spdX,spdY,width,height,category,img){
@@ -265,7 +278,7 @@ randomlyGenerateUpgrade = function(){
         var spdX = 0;
         var spdY = 0;
        
-        if(Math.random()<0.5){
+        if(Math.random() < 0.5){
                 var category = 'score';
                 var img = Img.upgrade1;
         } else {
@@ -288,7 +301,7 @@ Bullet = function (id,x,y,spdX,spdY,width,height, combatType){
 		var super_update = self.update;
 		self.update = function () {
 			super_update();
-			var toRemove = false;
+			var toRemove = false; //TODO: change to self.toRemove
             self.timer++;
             if(self.timer > 75){
                 toRemove = true;
@@ -296,10 +309,11 @@ Bullet = function (id,x,y,spdX,spdY,width,height, combatType){
             
 			//bullet collision
 			if (self.combatType == 'player') { //bullet was shot by player - delete enemies																				  
-				for(var key2 in enemyList){
-					if(self.testCollision(enemyList[key2])){
+				for(var key in enemyList){
+					if(self.testCollision(enemyList[key])){
 							toRemove = true;
-							delete enemyList[key2];
+							enemyList[key].hp -= 1;
+							//TODO:delete enemyList[key];
 							//break;
 					}      			
 				}
