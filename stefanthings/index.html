@@ -2,9 +2,25 @@
 <canvas id="ctx" width="1000" height="1000" style="border:1px solid #000000;"></canvas>
 <br>
 <span>V1 Highscore: <span>
-<span id="highscore"></span>
+<span id="highscore">0</span>
+<br>
+<span>Controls: Left Click: 1 star attack, Right Click: 3 stars attack, ASDW: Move, P:Pause</span>
 
 <!--Create the script -->
+<script src="https://www.gstatic.com/firebasejs/4.3.1/firebase.js"></script>
+<script>
+  // Initialize Firebase
+  var config = {
+    apiKey: "AIzaSyAzQNTHSaYdY9y0kDLo8aZz6Rpy0ZZCn6s",
+    authDomain: "stefanthings-3d65c.firebaseapp.com",
+    databaseURL: "https://stefanthings-3d65c.firebaseio.com",
+    projectId: "stefanthings-3d65c",
+    storageBucket: "stefanthings-3d65c.appspot.com",
+    messagingSenderId: "1072967212018"
+  };
+  firebase.initializeApp(config);
+</script>
+
 <script src="js/Entities.js"></script> 
 <script>
 
@@ -17,7 +33,13 @@ var timeWhenGameStarted = Date.now();   //return time in ms
 var frameCount = 0;
 var score = 0;
 var highscore = 0;
+var highscoreHTML = document.getElementById("highscore");
 var paused = false;
+var firebaseRef = firebase.database().ref().child("highscore");
+firebaseRef.on('value', function(datasnapshot){
+	highscoreHTML.innerText = datasnapshot.val();
+	highscore = datasnapshot.val();
+});	
 
 //load images in memory
 var Img = {};
@@ -160,6 +182,7 @@ startNewGame = function(){
 		console.log("New high score!");
 		highscore = score;
 		document.getElementById("highscore").innerHTML = highscore;
+		firebaseRef.set(highscore);
 	}
 	score = 0;
 	Enemy.list = {};
@@ -168,6 +191,8 @@ startNewGame = function(){
 	Enemy.randomlyGenerate();
 	Enemy.randomlyGenerate();
 	Enemy.randomlyGenerate();
+	paused = true;
+	
 }
 
 //map
