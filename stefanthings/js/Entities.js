@@ -13,7 +13,7 @@ Entity = function(type,id,x,y,spdX,spdY,width,height,img){
 		spdY:spdY,
 		width:width,
 		height:height,
-		img:img,
+		img:img
 	};
 	
 	//entity update method using updatePosition and draw
@@ -61,17 +61,29 @@ Entity = function(type,id,x,y,spdX,spdY,width,height,img){
 		   
 	}
 	
-	//update the position math only (this is missing taking into account the height/width of entity)
+	//update the position math only
 	self.updatePosition = function(){
 		self.x += self.spdX;
 		self.y += self.spdY;
 					   
-		if(self.x < 0 + Maps.current.fluff || self.x > Maps.current.width - Maps.current.fluff){
+		if(self.x < 0 + Maps.current.fluff + self.width/2 || self.x > Maps.current.width - Maps.current.fluff - self.width/2){
 			self.spdX = -self.spdX;
 		}
-		if(self.y < 0 + Maps.current.fluff || self.y > Maps.current.height - Maps.current.fluff){
+		if(self.y < 0 + Maps.current.fluff + self.height/2 || self.y > Maps.current.height - Maps.current.fluff + self.height/2){
 			self.spdY = -self.spdY;
 		}
+	}
+	
+	//out of bounds check
+	self.validatePosition = function(){		
+		if(self.x < self.width/2 + Maps.current.fluff)
+			self.x = self.width/2 + Maps.current.fluff;
+		if(self.x > Maps.current.width - self.width/2 - Maps.current.fluff)
+			self.x = Maps.current.width - self.width/2 - Maps.current.fluff;
+		if(self.y < self.height/2 + Maps.current.fluff)
+			self.y = self.height/2 + Maps.current.fluff;
+		if(self.y > Maps.current.height - self.height/2 - Maps.current.fluff)
+			self.y = Maps.current.height - self.height/2 - Maps.current.fluff;
 	}
    
 	return self;
@@ -150,33 +162,34 @@ Actor = function(type,id,x,y,spdX,spdY,width,height,img,hp,atkSpd){
 //Player - uses Actor
 Player = function(){
 	//				 type    ,id    ,x  ,y  ,spdX,spdY,width50,height70,img,hp,atkSpd
-	var self = Actor('player','myId',250,250,   0,   0,64,64,Img.paladin,10,2);
-   
-	self.updatePosition = function(){
+	var self = Actor('player','myId',500,500,   0,   0,64,64,Img.paladin,10,2);
+	
+	
+
+	
+	self.updateSpd = function(){
 		if(self.pressingRight)
-			self.x += 10;
-		if(self.pressingLeft)
-			self.x -= 10;
-		if(self.pressingDown)
-			self.y += 10;
-		if(self.pressingUp)
-			self.y -= 10;
+			self.spdX = 10;
+		else if(self.pressingLeft)
+			self.spdX = -10;
+		else
+			self.spdX = 0;
 		
-		//TODO: ispositionvalid - this is similar to flipping the speed for entity, it can be removed if player speed is used
-		if(self.x < self.width/2 + Maps.current.fluff)
-			self.x = self.width/2 + Maps.current.fluff;
-		if(self.x > Maps.current.width - self.width/2 - Maps.current.fluff)
-			self.x = Maps.current.width - self.width/2 - Maps.current.fluff;
-		if(self.y < self.height/2 + Maps.current.fluff)
-			self.y = self.height/2 + Maps.current.fluff;
-		if(self.y > Maps.current.height - self.height/2 - Maps.current.fluff)
-			self.y = Maps.current.height - self.height/2 - Maps.current.fluff;
+		if(self.pressingUp)
+			self.spdY = -10;
+		else if(self.pressingDown)
+			self.spdY = 10;
+		else
+			self.spdY = 0;
+		
 	}
 	
 	//update the Entity using additional update Player
 	var super_update = self.update;
 	self.update = function(){
+		self.updateSpd();
 		super_update();
+		self.validatePosition();
 		self.spriteAnimCounter += 0.5;
 		if(self.spriteAttacking){
 			self.spriteAttackingCounter +=1;
@@ -188,6 +201,7 @@ Player = function(){
 		if(self.pressingMouseRight)
 			player.performSpecialAttack();
 		
+		/*
 		if(self.pressingRight || self.pressingLeft)
 			self.spdX = 10;
 		else
@@ -195,8 +209,8 @@ Player = function(){
 		if(self.pressingUp || self.pressingDown)
 			self.spdY = 10;
 		else
-			self.spdY = 0;
-
+			self.spdY = 0;*/
+		console.log("spdX: " + self.spdX + ", spdY: " + self.spdY);
 	}
 	
 	self.spriteAnimCounter = 0;
@@ -236,13 +250,18 @@ Player = function(){
 		var walkingMod = Math.floor(self.spriteAnimCounter) % 7;
 		var attackingMod = Math.floor(self.spriteAttackingCounter) % 6;
 		
+		//TODO:export this entire function in Actor
 		//actual draw of image
+		//draw attack1
 		if (self.spriteAttacking && self.attackType == 0)
 			ctx.drawImage(self.img, attackingMod*frameWidth, directionMod*frameHeight+frameHeight*12, frameWidth, frameHeight, x, y, self.width, self.height);
+		//draw attack2
 		else if (self.spriteAttacking && self.attackType == 1)
 			ctx.drawImage(self.img, attackingMod*frameWidth*3, directionMod*frameHeight*3+frameHeight*21, frameWidth*3, frameHeight*3, x-frameWidth, y-frameHeight, self.width*3, self.height*3);
+		//draw walk
 		else if (self.spdX == 0 && self.spdY == 0)
 			ctx.drawImage(self.img, 0, directionMod*frameHeight+frameHeight*8, frameWidth, frameHeight, x, y, self.width, self.height);	
+		//draw standing
 		else
 			ctx.drawImage(self.img, walkingMod*frameWidth+frameWidth, directionMod*frameHeight+frameHeight*8, frameWidth, frameHeight, x, y, self.width, self.height);
 		
