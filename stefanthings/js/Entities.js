@@ -124,11 +124,11 @@ Actor = function(type,id,x,y,spdX,spdY,width,height,img,hp,atkSpd){
 			self.attackCounter = 0;
 			self.spriteAttacking = true;
 			self.attackType = 1;
-			/*
+			/*/
 			for(var i = 0 ; i < 360; i++){
 					Bullet.generate(self,i);
 			}
-			*/
+			//*/
 			Bullet.generate(self,self.aimAngle - 5);
 			Bullet.generate(self,self.aimAngle);
 			Bullet.generate(self,self.aimAngle + 5);
