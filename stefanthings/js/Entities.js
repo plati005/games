@@ -13,7 +13,8 @@ Entity = function(type,id,x,y,spdX,spdY,width,height,img){
 		spdY:spdY,
 		width:width,
 		height:height,
-		img:img
+		img:img,
+		toRemove:false
 	};
 	
 	//entity update method using updatePosition and draw
@@ -336,11 +337,11 @@ Enemy = function(id,x,y,spdX,spdY,width,height,img,hp,atkSpd){
 			self.y -= 3;
 	}
 	//*/
-	self.toRemove = false;
+	//self.toRemove = false;
 	
 	self.onDeath = function(){
 		self.toRemove = true;
-		//TODO:delete Enemy.list[key];
+		//TODO:delete Enemy.list[key]; somewhere
 	}
 	
 	//update the Actor using additional update Enemy
@@ -462,29 +463,29 @@ Bullet = function (id,x,y,spdX,spdY,width,height, combatType){
 	var super_update = self.update;
 	self.update = function () {
 		super_update();
-		var toRemove = false; //TODO: change to self.toRemove
+		//var toRemove = false; //TODO: change to self.toRemove
 		self.timer++;
 		if(self.timer > 75){
-			toRemove = true;
+			self.toRemove = true;
 		}
 		
 		//bullet collision
 		if (self.combatType == 'player') { //bullet was shot by player - delete enemies																				  
 			for(var key in Enemy.list){
 				if(self.testCollision(Enemy.list[key])){
-					toRemove = true;
+					self.toRemove = true;
 					Enemy.list[key].hp -= 1;
-					//TODO:delete Enemy.list[key];
+					//TODO:delete Enemy.list[key]; on death
 					//break;
 				}      			
 			}
 		} else if (self.combatType == 'enemy') { //bullet was shot by enemy	- delete player hp
 			if(self.testCollision(player)){
-				toRemove = true;
+				self.toRemove = true;
 				player.hp -= 1;
 			}
 		}
-		if(toRemove){
+		if(self.toRemove){
 			delete Bullet.list[self.id];
 		}
 	}
