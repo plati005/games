@@ -164,7 +164,7 @@ Actor = function(type,id,x,y,spdX,spdY,width,height,img,hp,atkSpd){
 Player = function(){
 	//				 type    ,id    ,x  ,y  ,spdX,spdY,width50,height70,img,hp,atkSpd
 	var self = Actor('player','myId',500,500,   0,   0,64,64,Img.paladin,10,2);
-	
+	//var self = Actor('player','myId',500,500,   0,   0,64,64,Img.player,10,2);
 	
 
 	

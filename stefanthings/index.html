@@ -35,10 +35,19 @@ var score = 0;
 var highscore = 0;
 var highscoreHTML = document.getElementById("highscore");
 var paused = false;
-var firebaseRef = firebase.database().ref().child("highscore");
-firebaseRef.on('value', function(datasnapshot){
+var firebaseHighScoreRef = firebase.database().ref().child("highscore");
+firebaseHighScoreRef.on('value', function(datasnapshot){
 	highscoreHTML.innerText = datasnapshot.val();
 	highscore = datasnapshot.val();
+});	
+var firebasePlayerRef = firebase.database().ref().child("player");
+var firebasePlayerX = 250;
+var firebasePlayerY = 250;
+firebasePlayerRef.child("x").on('value', function(datasnapshot){
+	firebasePlayerX = datasnapshot.val();
+});	
+firebasePlayerRef.child("y").on('value', function(datasnapshot){
+	firebasePlayerY = datasnapshot.val();
 });	
 
 //load images in memory
@@ -167,10 +176,14 @@ update = function(){
 	
 	//refresh player
 	player.update();
+	firebasePlayerRef.child("x").set(player.x);
+	firebasePlayerRef.child("y").set(player.y);
 	
 	//add HP and score
 	ctx.fillText(player.hp + " Hp",0,30);
 	ctx.fillText('Score: ' + score,200,30);
+	//ctx.fillText('player: ' + player.x + ", " + player.y,300,30);
+	//ctx.fillText('player: ' + firebasePlayerX + ", " + firebasePlayerY,300,60);
 }
 
 //new game 
@@ -182,7 +195,7 @@ startNewGame = function(){
 		console.log("New high score!");
 		highscore = score;
 		document.getElementById("highscore").innerHTML = highscore;
-		firebaseRef.set(highscore);
+		firebaseHighScoreRef.set(highscore);
 	}
 	score = 0;
 	Enemy.list = {};
