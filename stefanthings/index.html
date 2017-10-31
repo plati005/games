@@ -19,6 +19,9 @@
     messagingSenderId: "1072967212018"
   };
   firebase.initializeApp(config);
+  firebase.auth().signInAnonymously().catch(function(error) {
+	console.log(error.code + ": " + error.message);
+  });
 </script>
 
 <script src="js/Entities.js"></script> 
